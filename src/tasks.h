@@ -3,6 +3,6 @@
 
 #include <zephyr/kernel.h>
 
-extern const k_tid_t my_task_id;
+extern const k_tid_t my_task_id;                // Идентефикатор задачи
 
 #endif

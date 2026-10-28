@@ -7,7 +7,7 @@
 void simply_task(void *p1, void *p2, void *p3)
 {
 	// Если аргументы не используются, используем макрос ARG_UNUSED
-    	ARG_UNUSED(p1); 
+    ARG_UNUSED(p1); 
 	ARG_UNUSED(p2); 
 	ARG_UNUSED(p3);
 
