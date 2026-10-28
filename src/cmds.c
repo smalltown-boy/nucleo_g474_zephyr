@@ -27,6 +27,8 @@ static int cmd_my_leds(const struct shell *sh, size_t argc, char **argv)
         return -ENODEV;
     }
 
+	// Первый аргумент всегда название команды. Второй - субкоманда.
+	// Если общее число аргументов ниже двух, то выводим ошибку.
 	if (argc < 2) {
         shell_error(sh, "You lost arguments! Using: leds <on|off>");
         return -EINVAL;

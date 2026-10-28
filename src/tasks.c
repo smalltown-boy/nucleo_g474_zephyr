@@ -1,8 +1,11 @@
+#include <zephyr/logging/log.h>
 #include "tasks.h"
 
 // Для создания новой задачи
-#define SIMPLY_TASK_STACK_SIZE 	512
-#define SIMPLY_TASK_PRIORITY	7
+#define SIMPLY_TASK_STACK_SIZE 	512							// Размер стека указывается в байтах
+#define SIMPLY_TASK_PRIORITY	7							// Номер приоритета
+
+LOG_MODULE_REGISTER(main_app, LOG_LEVEL_INF);
 
 void simply_task(void *p1, void *p2, void *p3)
 {
@@ -11,8 +14,11 @@ void simply_task(void *p1, void *p2, void *p3)
 	ARG_UNUSED(p2); 
 	ARG_UNUSED(p3);
 
+	LOG_INF("[simply_task] has been started.");
+
     while (1) {
-        k_sleep(K_MSEC(2000)); // Как и во FreeRTOS - обязательно даём другим задачам поработать
+		LOG_INF("[simply_task] is running!");
+        k_sleep(K_MSEC(4000)); // Как и во FreeRTOS - обязательно даём другим задачам поработать
     }
 }
 
