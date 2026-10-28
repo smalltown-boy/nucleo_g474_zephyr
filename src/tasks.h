@@ -5,4 +5,6 @@
 
 extern const k_tid_t my_task_id;                // Идентефикатор задачи
 
+int system_init();
+
 #endif
