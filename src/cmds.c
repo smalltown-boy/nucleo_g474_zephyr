@@ -2,22 +2,12 @@
 #include <zephyr/shell/shell.h>
 #include <zephyr/drivers/gpio.h>
 #include <string.h> 
+#include <stdlib.h>
+#include "init_fs.h"
 
 static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);		// Из заводского оверлея забираем конфигурацию светодиода
 
 // Регистрация новых команд
-
-static int cmd_my_tasks(const struct shell *sh, size_t argc, char **argv)
-{
-	ARG_UNUSED(argc);
-    ARG_UNUSED(argv);
-	// Вот тут хитрость: мы отправляем в шелл на выполнение команду kernel
-	// с двумя аргументами
-    shell_execute_cmd(sh, "kernel thread list");
-    
-    return 0; 
-}
-
 static int cmd_my_leds(const struct shell *sh, size_t argc, char **argv)
 {
 	// В любой бизнес-логике нужно проверять, всё ли у нас 
@@ -53,5 +43,38 @@ static int cmd_my_leds(const struct shell *sh, size_t argc, char **argv)
     return -EINVAL;
 }
 
-SHELL_CMD_REGISTER(task, NULL, "Show tasks info.",   cmd_my_tasks);
+static int cmd_param(const struct shell *sh, size_t argc, char **argv)
+{
+    if (argc < 2) {
+        shell_error(sh, "Usage: param <get|set> [value]");
+        return -EINVAL;
+    }
+
+    if (strcmp(argv[1], "get") == 0) {
+        float val = 0.0f;
+        if (storage_get_param(&val) == 0) {
+            shell_print(sh, "Param = %.3f", (double)val);
+        } else {
+            shell_print(sh, "Param not set yet");
+        }
+        return 0;
+    }
+
+    if (strcmp(argv[1], "set") == 0) {
+        if (argc < 3) {
+            shell_error(sh, "Specify a value, e.g.: param set 1.250");
+            return -EINVAL;
+        }
+        float val = strtof(argv[2], NULL);
+        if (storage_set_param(val) == 0) {
+            shell_print(sh, "Saved: %.3f", (double)val);
+        }
+        return 0;
+    }
+
+    shell_error(sh, "Unknown subcommand: %s", argv[1]);
+    return -EINVAL;
+}
+
 SHELL_CMD_REGISTER(led,  NULL, "Control system led", cmd_my_leds);
+SHELL_CMD_REGISTER(param, NULL, "Get or set float param", cmd_param);
