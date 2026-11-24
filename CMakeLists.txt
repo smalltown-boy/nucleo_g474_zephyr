@@ -7,6 +7,4 @@ project(minimal)
 
 target_sources(app PRIVATE src/main.c
 			src/tasks.c
-			src/cmds.c
-			src/init_fs.c
 			)

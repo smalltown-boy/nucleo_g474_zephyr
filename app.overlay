@@ -1,13 +1,70 @@
 / {
     chosen {
-        zephyr,console = &usart1;
-        zephyr,shell-uart = &usart1;
+        zephyr,console = &usart3;
+        zephyr,shell-uart = &usart3;
+    };
+
+    leds {
+        led0: led_0 {
+            status = "disabled";
+        };
+    };
+
+    fstab {
+        compatible = "zephyr,fstab";
+        lfs1: lfs1 {
+            compatible = "zephyr,fstab,littlefs";
+            mount-point = "/lfs";
+            partition = <&lfs_partition>;
+            automount;
+            read-size = <16>;
+            prog-size = <16>;
+            cache-size = <64>;
+            lookahead-size = <32>;
+            block-cycles = <512>;
+        };
     };
 };
 
-&usart1 {
-    pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+&usart3 {
+    pinctrl-0 = <&usart3_tx_pc10 &usart3_rx_pc11>;
     pinctrl-names = "default";
     current-speed = <115200>;
     status = "okay";
 };
+
+&uart4 {
+    status = "disabled";
+};
+
+&spi1 {
+    status = "okay";
+    cs-gpios = <&gpiob 6 GPIO_ACTIVE_LOW>;
+
+    w25q_flash: w25q@0 {
+        compatible = "jedec,spi-nor";
+        reg = <0>;
+        spi-max-frequency = <8000000>;
+        size = <33554432>;
+        has-dpd;
+        t-enter-dpd = <3000>;
+        t-exit-dpd = <30000>;
+        jedec-id = [ef 40 16];
+
+        partitions {
+            compatible = "fixed-partitions";
+            #address-cells = <1>;
+            #size-cells = <1>;
+
+            lfs_partition: partition@0 {
+                label = "ext_storage";
+                reg = <0x00000000 0x00400000>;
+            };
+        };
+    };
+};
+
+&spi3 {
+    status = "disabled";
+};
+

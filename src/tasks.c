@@ -3,7 +3,7 @@
 #include "tasks.h"
 
 // Для создания новой задачи
-#define SIMPLY_TASK_STACK_SIZE 	512							// Размер стека указывается в байтах
+#define SIMPLY_TASK_STACK_SIZE 	2048						// Размер стека указывается в байтах
 #define SIMPLY_TASK_PRIORITY	7							// Номер приоритета
 
 LOG_MODULE_REGISTER(main_app, LOG_LEVEL_INF);				// Регистрируем модуль логирования
@@ -84,4 +84,4 @@ K_THREAD_DEFINE(my_task_id,
 				NULL, 
 				SIMPLY_TASK_PRIORITY, 
 				0, 
-				0);
+				100);
