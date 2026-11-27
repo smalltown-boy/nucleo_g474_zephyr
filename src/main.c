@@ -4,6 +4,7 @@
 #include <zephyr/drivers/flash.h>
 #include <zephyr/fs/fs.h>
 #include <string.h>
+#include <zephyr/dfu/mcuboot.h>
 
 #define CONFIG_FILE "/lfs/config.json"
 
@@ -68,41 +69,14 @@ int main(void)
     check_physical_flash();
     printk("------------------------------\n");
 
-#if 0
-    struct fs_file_t file;
-    int rc;
-    char buffer;
-
-    fs_file_t_init(&file);
-
-    /* Создаём и записываем файл (раздел /lfs уже примонтирован при старте, об этом позаботился код из оверлея) */
-    rc = fs_open(&file, CONFIG_FILE, FS_O_CREATE | FS_O_WRITE | FS_O_TRUNC);
-    if (rc < 0) {
-        printk("Ошибка открытия на запись: %d\n", rc);
-        return 1;
+    if (!boot_is_img_confirmed()) {
+        int rc = boot_write_img_confirmed();
+        if (rc == 0) {
+            printk("Firmware image confirmed!");
+        } else {
+            printk("Failed to confirm image: %d", rc);
+        }
     }
-
-    const char *json = "{\"os\":\"zephyr\",\"uart\":\"usart3\",\"ok\":true}\n";
-    fs_write(&file, json, strlen(json));
-    fs_close(&file);
-    printk("Файл успешно записан!\n");
-
-    /* Читаем файл обратно */
-    fs_file_t_init(&file);
-    rc = fs_open(&file, CONFIG_FILE, FS_O_READ);
-    if (rc < 0) {
-        printk("Ошибка открытия на чтение: %d\n", rc);
-        return 1;
-    }
-
-    memset(buffer, 0, sizeof(buffer));
-    ssize_t bytes = fs_read(&file, buffer, sizeof(buffer) - 1);
-    fs_close(&file);
-
-    if (bytes >= 0) {
-        printk("Прочитано (%zd байт): %s\n", bytes, buffer);
-    }
-#endif
 
     return 0;
 }

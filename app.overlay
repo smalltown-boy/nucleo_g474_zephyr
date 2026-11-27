@@ -2,6 +2,7 @@
     chosen {
         zephyr,console = &usart3;
         zephyr,shell-uart = &usart3;
+        zephyr,code-partition = &slot0_partition;
     };
 
     leds {
@@ -22,6 +23,32 @@
             cache-size = <64>;
             lookahead-size = <32>;
             block-cycles = <512>;
+        };
+    };
+};
+
+/* Внутренняя флеш-память STM32G474 (512 КБ) */
+&flash0 {
+    /delete-node/ partitions;
+
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        boot_partition: partition@0 {
+            label = "mcuboot";
+            reg = <0x00000000 0x00010000>;
+        };
+
+        slot0_partition: partition@10000 {
+            label = "image-0";
+            reg = <0x00010000 0x0006E000>;
+        };
+
+        storage_partition: partition@7E000 {
+            label = "storage";
+            reg = <0x0007E000 0x00002000>;
         };
     };
 };
@@ -56,9 +83,22 @@
             #address-cells = <1>;
             #size-cells = <1>;
 
-            lfs_partition: partition@0 {
+            /* Резервный слот MCUboot (440 КБ — равен slot0) */
+            slot1_partition: partition@0 {
+                label = "image-1";
+                reg = <0x00000000 0x0006E000>;
+            };
+
+            /* Раздел временного обмена для MCUboot: 64 КБ */
+            scratch_partition: partition@6E000 {
+                label = "image-scratch";
+                reg = <0x0006E000 0x00010000>;
+            };
+
+            /* Остаток внешней флеш (3592 КБ) под LittleFS */
+            lfs_partition: partition@7E000 {
                 label = "ext_storage";
-                reg = <0x00000000 0x00400000>;
+                reg = <0x0007E000 0x00382000>;
             };
         };
     };
@@ -66,25 +106,16 @@
 
 &spi3 {
     status = "okay";
-
-    /* Настройка пинов для SPI3: PC10 (SCK), PC11 (MISO), PC12 (MOSI) */
     pinctrl-0 = <&spi3_sck_pb3 &spi3_miso_pb4 &spi3_mosi_pb5>;
     pinctrl-names = "default";
-
-    /* Ваш пин CS: PA10 */
     cs-gpios = <&gpioa 10 GPIO_ACTIVE_LOW>;
 
     w5500: w5500@0 {
         compatible = "wiznet,w5500";
         reg = <0>;
-        spi-max-frequency = <16000000>; /* 16 МГц для надежной работы на проводах */
-
-        /* Ваши пины INT (PC5) и RST (PC4) */
+        spi-max-frequency = <16000000>;
         int-gpios = <&gpioc 5 GPIO_ACTIVE_LOW>;
         reset-gpios = <&gpioc 4 GPIO_ACTIVE_LOW>;
-
         local-mac-address = [00 08 dc 47 40 01];
     };
 };
-
-
